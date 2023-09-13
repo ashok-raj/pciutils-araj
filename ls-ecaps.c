@@ -1409,6 +1409,41 @@ cap_doe(struct device *d, int where)
 	 FLAG(l, PCI_DOE_STS_OBJECT_READY));
 }
 
+static void
+cap_dev3(struct device *d, int where, int type)
+{
+  u32 u;
+  printf("Device 3 -- DMWr\n");
+  if (verbose < 2)
+    return;
+
+  if (!config_fetch(d, where + PCI_DEV3_CAP, 16))
+    return;
+
+  if (type != PCI_EXP_TYPE_ENDPOINT) {
+    u = get_conf_long(d, where + PCI_DEV3_CAP);
+    printf("\t\tDMWrCap: ReqRouting%c\n", FLAG(u, PCI_DEV3_CAP_DMWR));
+
+    u = get_conf_long(d, where + PCI_DEV3_CTRL);
+    printf("\t\tDMWrCtrl: EgressBlck%c",
+           FLAG(u, PCI_DEV3_CTRL_DMWR_EGRESS_BLOCK));
+
+    if (type == PCI_EXP_TYPE_ROOT_PORT) {
+       u = get_conf_long(d, where + PCI_DEV3_CTRL);
+       /* To use DMWr, Bus Master Enable bit in the Command register must set too*/
+       printf(", ReqEn%c\n",
+              FLAG(u, PCI_DEV3_CTRL_DMWRREQ));
+    }
+    else
+       printf("\n");
+  }
+  else {
+    u = get_conf_long(d, where + PCI_DEV3_CTRL);
+    /* To use DMWr, Bus Master Enable bit in the Command register must set too*/
+    printf("\t\tDMWrCtrl: RequesterEn%c\n", FLAG(u, PCI_DEV3_CTRL_DMWRREQ));
+  }
+}
+
 void
 show_ext_caps(struct device *d, int type)
 {
@@ -1556,11 +1591,14 @@ show_ext_caps(struct device *d, int type)
 	  case PCI_EXT_CAP_ID_NPEM:
 	    printf("Native PCIe Enclosure Management <?>\n");
 	    break;
-      case PCI_EXT_CAP_ID_32GT:
+	  case PCI_EXT_CAP_ID_32GT:
 	    printf("Physical Layer 32.0 GT/s <?>\n");
-        break;
+            break;
 	  case PCI_EXT_CAP_ID_DOE:
 	    cap_doe(d, where);
+	    break;
+	  case PCI_EXT_CAP_ID_DEV3:
+	    cap_dev3(d, where, type);
 	    break;
 	  default:
 	    printf("Extended Capability ID %#02x\n", id);

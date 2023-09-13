@@ -1061,6 +1061,19 @@ static const char *cap_express_devcap2_tphcomp(int tph)
     }
 }
 
+static const char *cap_express_devcap2_dmwr_len(int dmwr_len)
+{
+  switch (dmwr_len)
+  {
+     case 0:
+       return "DMWrTLP64Byte+";
+     case 1:
+       return "DMWrTLP128Byte+";
+     default:
+       return "Reserved";
+  }
+}
+
 static const char *cap_express_devctl2_obff(int obff)
 {
   switch (obff)
@@ -1101,6 +1114,7 @@ static void cap_express_dev2(struct device *d, int where, int type)
   u32 l;
   u16 w;
   int has_mem_bar = device_has_memory_space_bar(d);
+  int cap2_dmwr_decoding, pos3;
 
   l = get_conf_long(d, where + PCI_EXP_DEVCAP2);
   printf("\t\tDevCap2: Completion Timeout: %s, TimeoutDis%c NROPrPrP%c LTR%c",
@@ -1151,6 +1165,32 @@ static void cap_express_dev2(struct device *d, int where, int type)
 		FLAG(l, PCI_EXP_DEVCAP2_128BIT_CAS_COMP));
        printf("\n");
     }
+
+  cap2_dmwr_decoding = 0;
+  if (has_mem_bar || type == PCI_EXP_TYPE_ENDPOINT ||
+      type == PCI_EXP_TYPE_ROOT_PORT)
+    {
+       printf("\t\t\t DMWrComp%c", FLAG(l, PCI_EXP_DEVCAP2_DMWR_COMP));
+       cap2_dmwr_decoding = 1;
+       if (l & PCI_EXP_DEVCAP2_DMWR_COMP)
+         {
+	    printf(", %s",
+	    cap_express_devcap2_dmwr_len(PCI_EXP_DEVCAP2_DMWR_LEN(l)));
+	    cap2_dmwr_decoding = 2;
+	 }
+    }
+  pos3 = config_find_ecap(d, PCI_EXT_CAP_ID_DEV3);
+  if (pos3 &&
+      (pci_read_long(d->dev, pos3 + PCI_DEV3_CAP) & PCI_DEV3_CAP_DMWR))
+    {
+       if (cap2_dmwr_decoding == 0)
+         printf("\t\t\t %s",
+	      cap_express_devcap2_dmwr_len(PCI_EXP_DEVCAP2_DMWR_LEN(l)));
+       else if (cap2_dmwr_decoding == 1)
+         printf(", %s",
+	        cap_express_devcap2_dmwr_len(PCI_EXP_DEVCAP2_DMWR_LEN(l)));
+    }
+  printf("\n");
 
   w = get_conf_word(d, where + PCI_EXP_DEVCTL2);
   printf("\t\tDevCtl2: Completion Timeout: %s, TimeoutDis%c LTR%c 10BitTagReq%c OBFF %s,",

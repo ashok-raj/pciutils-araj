@@ -54,6 +54,7 @@ struct device *scan_device(struct pci_dev *p);
 void show_device(struct device *d);
 
 int config_fetch(struct device *d, unsigned int pos, unsigned int len);
+int config_find_ecap(struct device *d, int cap_id);
 u32 get_conf_long(struct device *d, unsigned int pos);
 word get_conf_word(struct device *d, unsigned int pos);
 byte get_conf_byte(struct device *d, unsigned int pos);

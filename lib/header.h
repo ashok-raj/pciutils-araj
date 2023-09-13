@@ -897,6 +897,8 @@
 #define  PCI_EXP_DEVCAP2_MEE_TLP(x)	(((x) >> 22) & 3) /* Max End-End TLP Prefixes */
 #define  PCI_EXP_DEVCAP2_EPR(x)		(((x) >> 24) & 3) /* Emergency Power Reduction Supported */
 #define  PCI_EXP_DEVCAP2_EPR_INIT	0x04000000 /* Emergency Power Reduction Initialization Required */
+#define  PCI_EXP_DEVCAP2_DMWR_COMP	0x10000000 /* DMWr Completer supported */
+#define  PCI_EXP_DEVCAP2_DMWR_LEN(x)	(((x) >> 29) & 3) /* DMWr lengths supported */
 #define  PCI_EXP_DEVCAP2_FRS		0x80000000 /* FRS supported */
 #define PCI_EXP_DEVCTL2			0x28	/* Device Control */
 #define  PCI_EXP_DEVCTL2_TIMEOUT_VALUE(x)	((x) & 0xf) /* Completion Timeout Value */
@@ -1396,6 +1398,15 @@
 #define  PCI_DOE_STS_INT		0x2	/* DOE Interrupt Status */
 #define  PCI_DOE_STS_ERROR		0x4	/* DOE Error */
 #define  PCI_DOE_STS_OBJECT_READY	0x80000000 /* Data Object Ready */
+
+/* Device 3 Extended Capability */
+#define PCI_DEV3_CAP		0x04	/* Device Capabilities 3 Register */
+#define  PCI_DEV3_CAP_DMWR		0x01	/* DMWr Request Routing Supported */
+#define PCI_DEV3_CTRL		0x08	/* Device Control 3 Register */
+#define  PCI_DEV3_CTRL_DMWRREQ		 0x01	/* DMWr Requester Enable */
+#define  PCI_DEV3_CTRL_DMWR_EGRESS_BLOCK 0x02	/* DMWr Egress Blocking  */
+#define PCI_DEV3_STATUS		0x0c	/* Device Status 3 Register */
+
 
 /*
  * The PCI interface treats multi-function devices as independent

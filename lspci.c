@@ -114,6 +114,26 @@ config_fetch(struct device *d, unsigned int pos, unsigned int len)
   return result;
 }
 
+int config_find_ecap(struct device *d, int cap_id)
+{
+  int where = 0x100;
+
+  do {
+    u32 header;
+    int id;
+
+    header = pci_read_long(d->dev, where);
+    if (!header)
+      break;
+    id = header & 0xffff;
+    if (id == cap_id)
+      return where;
+    where = (header >> 20) & ~3;
+  } while (where);
+
+  return 0;
+}
+
 struct device *
 scan_device(struct pci_dev *p)
 {
